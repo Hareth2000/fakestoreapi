@@ -5,7 +5,7 @@ const addProductForm = document.getElementById('add-product-form');
 const productForm = document.getElementById('product-form');
 
 addProductButton.addEventListener('click', () => {
-    addProductForm.style.display = 'block'; 
+    addProductForm.style.display = 'block';
 });
 
 productForm.addEventListener('submit', async (e) => {
@@ -17,26 +17,25 @@ productForm.addEventListener('submit', async (e) => {
     const image = document.getElementById('image').value;
 
     const newProduct = {
-        title,
-        price,
-        description,
-        image
+        Title: title,
+        Price: price,
+        Description: description,
+        image: image
     };
 
     await createProduct(newProduct);
 
     addProductForm.style.display = 'none';
-
     productContainer.innerHTML = '';
     fetchProducts();
 });
 
 class Product {
-    constructor(id, title, price, description, image) {
+    constructor(id, Title, Price, Description, image) {
         this.id = id;
-        this.title = title;
-        this.price = price;
-        this.description = description;
+        this.Title = Title;
+        this.Price = Price;
+        this.Description = Description;
         this.image = image;
     }
 
@@ -45,28 +44,31 @@ class Product {
         card.classList.add('product-card');
         card.setAttribute('data-id', this.id);
 
+        // Image
         const img = document.createElement('img');
         img.src = this.image;
-        img.alt = this.title;
+        img.alt = this.Title;
 
+        // Title
         const title = document.createElement('h2');
-        title.textContent = this.title;
+        title.textContent = this.Title;
 
+        // Price
         const price = document.createElement('p');
         price.classList.add('price');
-        price.textContent = this.price ? `$${this.price.toFixed(2)}` : "Price unavailable";
+        price.textContent = this.Price ? `$${this.Price.toFixed(2)}` : "Price unavailable";
 
+        // Description
         const description = document.createElement('p');
         description.classList.add('description');
-        description.textContent = this.description;
+        description.textContent = this.Description;
 
-        // زر التحديث
+        // Update and Delete buttons
         const updateButton = document.createElement('button');
         updateButton.classList.add('update-button');
         updateButton.textContent = 'Update';
         updateButton.onclick = () => this.updateProduct();
 
-        // زر الحذف
         const deleteButton = document.createElement('button');
         deleteButton.textContent = 'Delete';
         deleteButton.onclick = () => this.deleteProduct();
@@ -82,21 +84,21 @@ class Product {
     }
 
     async updateProduct() {
-        const newTitle = prompt("Enter new title for the product:", this.title);
-        if (newTitle && newTitle !== this.title) {
+        const newTitle = prompt("Enter new title for the product:", this.Title);
+        if (newTitle && newTitle !== this.Title) {
             try {
                 const response = await fetch(`${apiUrl}/${this.id}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ title: newTitle }),
+                    body: JSON.stringify({ Title: newTitle }),
                 });
                 const updatedProduct = await response.json();
                 console.log('Updated Product:', updatedProduct);
 
-                this.title = updatedProduct.title;
+                this.Title = updatedProduct.Title;
                 const card = document.querySelector(`.product-card[data-id="${this.id}"]`);
                 if (card) {
-                    card.querySelector('h2').textContent = updatedProduct.title;
+                    card.querySelector('h2').textContent = updatedProduct.Title;
                 }
             } catch (error) {
                 console.error('Error updating product:', error);
@@ -105,7 +107,7 @@ class Product {
     }
 
     async deleteProduct() {
-        const confirmed = confirm(`Are you sure you want to delete the product: ${this.title}?`);
+        const confirmed = confirm(`Are you sure you want to delete the product: ${this.Title}?`);
         if (confirmed) {
             try {
                 const response = await fetch(`${apiUrl}/${this.id}`, {
@@ -114,7 +116,6 @@ class Product {
                 if (response.ok) {
                     console.log(`Product with ID ${this.id} deleted`);
 
-                    // إزالة المنتج من الواجهة بعد الحذف
                     const card = document.querySelector(`.product-card[data-id="${this.id}"]`);
                     if (card) {
                         card.remove();
@@ -147,7 +148,7 @@ async function fetchProducts() {
         const data = await response.json();
         console.log(data);
 
-        const products = data.slice(0, 20).map(item => new Product(item.id, item.title, item.price, item.description, item.image));
+        const products = data.map(item => new Product(item.id, item.Title, item.Price, item.Description, item.image));
 
         products.forEach(product => {
             const card = product.generateCard();
@@ -158,5 +159,4 @@ async function fetchProducts() {
     }
 }
 
-// تنفيذ العمليات
 fetchProducts();
